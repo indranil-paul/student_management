@@ -18,11 +18,13 @@
     "@angular/platform-browser": "~13.3.0",
     "@angular/platform-browser-dynamic": "~13.3.0",
     "@angular/router": "~13.3.0",
+    "@auth0/angular-jwt": "^5.0.2",
     "angular-datatables": "^13.0.1",
     "datatables.net": "^1.11.5",
     "datatables.net-dt": "^1.11.5",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
+    "url-polyfill": "^1.1.12",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {

@@ -19,11 +19,9 @@ export class LoginComponent implements OnInit {
   constructor(private authService: AuthService, private fb: FormBuilder, private studentService: StudentService, private router: Router) { }
 
   ngOnInit(): void {
-
     if (this.authService.isAuthenticated()) {
-        this.router.navigate(['/home']);
+      this.router.navigate(['/home']);
     }
-
     this.form = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required]
@@ -45,6 +43,10 @@ export class LoginComponent implements OnInit {
   isInvalid(field: string) {
     let ifValid = (!this.frmCtrl[field].valid && this.frmCtrl[field].touched) || (this.frmCtrl[field].untouched && this.formSubmitAttempt);
     return ifValid;
+  }
+
+  goToSignupPage(): void {
+    this.router.navigate(['/signup']);
   }
 
 }

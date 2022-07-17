@@ -1,0 +1,7 @@
+<div *ngIf="message" role="alert" [ngClass]="message.cssClass" >
+    <strong *ngIf="message.type==='error'">Error!</strong>
+    <strong *ngIf="message.type==='success'">Success!</strong>
+    <strong *ngIf="message.type==='info'">Info!</strong>
+    <strong *ngIf="message.type==='warning'">Warning!</strong>
+    {{message.text}}
+</div>

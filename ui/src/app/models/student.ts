@@ -1,8 +1,8 @@
 export interface Student {
-    rollno: number;
+    user: number
     fname: string;
     lname: string;
-    age: number;
+    dob: Date;
     gender: string;
     degree: string;
     city: string;

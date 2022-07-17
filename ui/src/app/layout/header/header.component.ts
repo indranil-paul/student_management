@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
+import { AppAlertService } from 'src/app/core/app-alert.service';
 
 @Component({
   selector: 'app-header',
@@ -13,26 +13,27 @@ export class HeaderComponent implements OnInit {
   isLoggedIn: any;
   displayWelcomeMsg: string = "";
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private alert: AppAlertService) {}
 
   ngOnInit(): void {
     this.displayWelcomeMsg = "";
     this.isAuthenticated = this.authService.isAuthenticated();
-    this.authService.IsLoggedIn.subscribe((status:any)=>this.isLoggedIn = status);
+    this.authService.IsLoggedIn.subscribe({ next: (res:any) => { this.isLoggedIn = res;}});
 
-    setTimeout(() => {    
-      if (this.isAuthenticated){
-        let userDetails = localStorage.getItem('user_details');
-        let uname = userDetails?.split("|")[0];
-        let fname = userDetails?.split("|")[1];
-        let lname = userDetails?.split("|")[2];
-        this.displayWelcomeMsg = "Welcome " + fname + " " + lname + "(" + uname + ")" ;
-      }
-    }, 2000);
+    if (this.isLoggedIn){
+      let user = localStorage.getItem('user_details');
+      let uname = user?.split("|")[1];
+      let fname = user?.split("|")[2];
+      let lname = user?.split("|")[3];
+      this.displayWelcomeMsg = "Welcome " + fname + " " + lname + "(" + uname + ")";
+    }
   }
   
   onLogout(): void {
-    this.authService.logout();
+    this.alert.warning("You are logged out! Redirecting to login page ...");
+    setTimeout(() => {      
+      this.authService.logout();
+    }, 3000);
   }
 
 }

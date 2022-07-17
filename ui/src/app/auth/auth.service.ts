@@ -1,29 +1,33 @@
 import { BehaviorSubject, Observable } from 'rxjs';
+import { map} from 'rxjs/operators';
 import { User } from 'src/app/models/user';
 import { Router } from '@angular/router';
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http'; 
 import { APIEndPoints as ep} from 'src/app/core/app.config';
-import { map, tap  } from 'rxjs/operators';
-
+import { AppAlertService } from 'src/app/core/app-alert.service';
+import { JwtHelperService } from "@auth0/angular-jwt";
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnDestroy{
   private loggedIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private token: string = "";
   private refreshToken: string = "";
   private tokenDecoded: any;
   private refreshTokenTimeout: any;
+  private jwtHelper = new JwtHelperService();
+  private intervalId: any = 0;
+  private loggedInUser: any;
 
   get IsLoggedIn() {
     return this.loggedIn.asObservable();
   }
 
-  constructor(private router: Router, public http: HttpClient) {}
+  constructor(private router: Router, public http: HttpClient, private alert: AppAlertService) {}
 
   /**
-   * 
-   * @returns 
+   * Checks whether user is authenticated or not
+   * @returns Boolean - whether authenticated or not
    */
   public isAuthenticated(): boolean {
     let token: string | null = localStorage.getItem("access_token");
@@ -39,18 +43,16 @@ export class AuthService {
     }
   }
 
+  public userInfo(): any {
+    return this.loggedInUser;
+  }
+
   /**
-   * 
+   * Decodes the JWT to find the expiring time
    */
   private decodeToken(): void {
-    let token_parts = this.token.split(/\./);
-    
-    this.tokenDecoded = JSON.parse(window.atob(token_parts[1]));
-    console.log(this.tokenDecoded);
+    this.tokenDecoded = this.jwtHelper.decodeToken(this.token);
     this.startRefreshTokenTimer();
-  
-    let isTokenExpired = (Math.floor((new Date).getTime() / 1000)) >= this.tokenDecoded.exp ? "Y" : "N";
-    localStorage.setItem('token_expired', isTokenExpired);
   }
 
   /**
@@ -58,12 +60,14 @@ export class AuthService {
    * @param _authRes The token response
    */
   private setSession(_authRes: any): void {
-    this.token = _authRes.access;
+    if (_authRes.access){
+      this.token = _authRes.access;
+      localStorage.setItem('access_token', this.token);
+    }    
     if (_authRes.refresh){
       this.refreshToken = _authRes.refresh;
+      localStorage.setItem('refresh_token', this.refreshToken);
     }
-    localStorage.setItem('access_token', this.token);
-    localStorage.setItem('refresh_token', this.refreshToken);
     this.decodeToken();
   }
 
@@ -73,13 +77,18 @@ export class AuthService {
    */
   private fetchToken(_reqBody: any) {
     this.http.post(ep.api_gettoken, _reqBody)
-    .subscribe((res: any) => {
-      if (res) {        
-        this.setSession(res);
-        this.loggedIn.next(true);      
-        this.router.navigate(['/home']);
-      }
-    });
+      .subscribe({
+        next: (res: any) => {
+          this.setSession(res);
+          this.loggedIn.next(true);      
+          this.router.navigate(['/home']);
+          this.alert.success("Login Successful!");
+        },
+        error: (err: any) => {
+          this.alert.error("Login Failed!");
+        },
+        complete: ()=> { setTimeout(() => { this.getUserInfo(); }, 1000); }
+      });
   }
 
   /**
@@ -92,12 +101,7 @@ export class AuthService {
         'username': user.username.trim(),
         'password': user.password.trim()
       }
-      this.fetchToken(reqBody);
-
-      setTimeout(() => {
-        this.getUserInfo();
-      }, 2000);
-      
+      this.fetchToken(reqBody);   
     }
   }
 
@@ -106,10 +110,7 @@ export class AuthService {
    */
   public logout(): void {
     this.stopRefreshTokenTimer();
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('token_expired');
-    localStorage.removeItem('user_details');
+    localStorage.clear()
     this.token = "";
     this.refreshToken = "";
     this.loggedIn.next(false);
@@ -120,20 +121,23 @@ export class AuthService {
    * Fetches logged in user details
    */
    private getUserInfo() {
-    this.http.get(ep.api_user)
-    .subscribe((res: any) => {
-      if (res.status == 'success') {
-        let userDetails = res.data.uname + "|" + res.data.fname + "|" + res.data.lname + "|" + res.data.email;
-        localStorage.setItem("user_details", userDetails);
-      }
+    this.http.get(ep.api_user).subscribe({
+      next: (res: any) => {
+        if (res.status == 'success') {
+          this.loggedInUser = res.data;
+          let userDetails = res.data.id + "|" + res.data.uname + "|" + res.data.fname + "|" + res.data.lname + "|" + res.data.email + "|" + res.data.admin;
+          localStorage.setItem("user_details", userDetails);
+        }
+      },
+      error: (err: any) => { this.alert.error("Failed to fetch user details!"); }
     });
   }
 
   /**
-   * 
+   * Refreshes the token by call refresh API
    */
   private refreshAccessToken(): Observable<any> {
-    return this.http.post(ep.api_refreshtoken, {"refresh": this.refreshToken}, { withCredentials: true })
+    return this.http.post(ep.api_refreshtoken, {"refresh": this.refreshToken})
       .pipe(map((res) => {
         this.setSession(res);
         return res;
@@ -141,20 +145,40 @@ export class AuthService {
   }
 
   /**
-   * 
+   * Set periodic call to validate the expiration of the token
    */
   startRefreshTokenTimer(): void {
+    this.validateTokenExpiration(); 
+    this.intervalId = setInterval(() => {
+      this.validateTokenExpiration(); 
+    }, 30000);
+
     let jwtexp = new Date(this.tokenDecoded.exp * 1000);
     let jwtexpTimeout = jwtexp.getTime() - Date.now() - (60 * 1000);
     this.refreshTokenTimeout = setTimeout(() => this.refreshAccessToken().subscribe(), jwtexpTimeout);
   }
 
+  /**
+   * Checks whether the JWT expired or not
+   */
+  validateTokenExpiration(): void {
+    let isTokenExpired = this.jwtHelper.isTokenExpired(this.token);
+    localStorage.setItem('token_expired', isTokenExpired ? "Y" : "N");
+  }
 
   /**
-   * 
+   * Stops the timer for refreshing token
    */
   stopRefreshTokenTimer(): void {
     clearTimeout(this.refreshTokenTimeout);
   }
-  
+
+  /**
+   * clears the setinterval object
+   */
+  ngOnDestroy() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+  }  
 }

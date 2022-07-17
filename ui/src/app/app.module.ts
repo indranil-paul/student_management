@@ -4,11 +4,11 @@ import { AppRoutingModule } from './app-routing.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { JwtModule } from '@auth0/angular-jwt';
 
 // Components
 import { AppComponent } from './app.component';
 import { StudentRegComponent } from './student/student-reg/student-reg.component';
-import { StudentUpdComponent } from './student/student-upd/student-upd.component';
 import { StudentInfoComponent } from './student/student-info/student-info.component';
 import { HeaderComponent } from './layout/header/header.component';
 import { FooterComponent } from './layout/footer/footer.component';
@@ -20,24 +20,32 @@ import { AuthService } from './auth/auth.service';
 import { AuthGuard } from './auth/auth.guard';
 import { StudentService } from './core/student.service';
 import { AppInterceptor } from './core/app-interceptor';
+import { CustomAlertComponent } from './custom-alert/custom-alert.component';
+import { SignupComponent } from './signup/signup.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     StudentRegComponent,
-    StudentUpdComponent,
     StudentInfoComponent,
     HeaderComponent,
     FooterComponent,
     HomeComponent,
-    LoginComponent
+    LoginComponent,
+    CustomAlertComponent,
+    SignupComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
     BrowserAnimationsModule,
-    HttpClientModule
+    HttpClientModule,
+    JwtModule.forRoot({
+      config: {
+        tokenGetter: () => { return localStorage.getItem("access_token"); },
+      },
+    })
   ],
   providers: [AuthService, AuthGuard, StudentService, { provide: HTTP_INTERCEPTORS, useClass: AppInterceptor, multi: true } ],
   bootstrap: [AppComponent]

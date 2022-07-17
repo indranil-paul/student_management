@@ -10,11 +10,27 @@ export class StudentService {
 
   constructor(public http: HttpClient) { }
 
-  public geturl(_key: string, id: string = "") {
-    return `ep.${_key}/${id}`
+  private geturl(_key: string, _id: string = ""): string {
+    const keyName = _key as keyof typeof ep;
+    let url: string = "";
+    if (_id.trim() !== "") url = `${ep[keyName]}/${_id}`
+    else url = `${ep[keyName]}`
+    return url
   }
 
-  public fetch(_url: string): Observable<any> {
-    return this.http.get(_url);
+  public get(_key: string, _id: string = ""): Observable<any> {
+    let url: string = this.geturl(_key, _id);
+    return this.http.get(url);
   }
+
+  public post(_key: string, _payload: any): Observable<any> {
+    let url: string = this.geturl(_key);
+    return this.http.post(url, _payload);
+  }
+
+  public put(_key: string, _payload: any, _id: string): Observable<any> {
+    let url: string = this.geturl(_key, _id);
+    return this.http.put(url, _payload);
+  }
+  
 }

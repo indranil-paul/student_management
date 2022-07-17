@@ -1,0 +1,44 @@
+<div class="container row justify-content-center" style="margin-top: 20px">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">
+                Sign Up
+            </div>
+            <div class="card-body">
+                <form [formGroup]="signupForm" (ngSubmit)="onSave(signupForm.getRawValue())">
+                    <!-- User Name -->
+                    <div class="form-group row">
+                        <label for="inputuname" class="col-sm-3 col-form-label-sm">Enter User Name</label>
+                        <div class="col-sm-9">
+                            <input type="text" formControlName="username" class="form-control form-control-sm" id="inputuname" placeholder="5 to 20 character. Alphanumeric with '_' (underscore)">
+                        </div>
+                    </div>
+                    <!-- Password -->
+                    <div class="form-group row">
+                        <label for="inputpass" class="col-sm-3 col-form-label-sm">Enter Password</label>
+                        <div class="col-sm-9">
+                            <input type="password" formControlName="password" class="form-control form-control-sm" id="inputpass" placeholder="8 to 20 character">
+                        </div>
+                    </div>
+                    <!-- Email -->
+                    <div class="form-group row">
+                        <label for="inputemail" class="col-sm-3 col-form-label-sm">Enter Email ID</label>
+                        <div class="col-sm-9">
+                            <input formControlName="email" type="email" class="form-control form-control-sm" id="inputemail" placeholder="user@email.com">
+                        </div>
+                    </div>
+
+                    <br>
+
+                    <!-- Action Buttons -->
+                    <div class="form-group row col-sm-8">
+                        <div class="btn-group" role="group" aria-label="register">
+                            <button type="submit" class="btn btn-sm btn-primary" [disabled]="signupForm.invalid">Create Account</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="backToLogin()">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
