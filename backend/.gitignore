@@ -1,3 +1,5 @@
 env/
 *.pyc
+*.log
+*.sqlite3
 __pycache__

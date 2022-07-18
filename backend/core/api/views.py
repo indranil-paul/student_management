@@ -1,3 +1,4 @@
+import logging
 import common.api_config as Cnf
 from api.models import Student
 from rest_framework import generics
@@ -6,6 +7,8 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from api.serializers import StudentSerializer, UserSerializer, RegisterSerializer
 
+# Logger
+logger = logging.getLogger('core_debug')
 
 class HealthView(APIView):
     '''
@@ -15,6 +18,7 @@ class HealthView(APIView):
   
     def get(self, request, format=None):
         res = Cnf.prepareSuccessResponse('Running fine!')
+        logger.debug('Running fine!')
         return res
 
 
@@ -36,8 +40,10 @@ class UserView(APIView):
                 'id': user.id,
             }
             res = Cnf.prepareSuccessResponse(userInfo)
+            logger.debug(f' {request.user.username} -> Fetch user details')
             return res
         except Exception as e:
+            logger.debug(f' {request.user.username} -> ERR: {e}')
             return Cnf.prepareErrorResponse('default')
 
 
@@ -60,9 +66,10 @@ class StudentListView(APIView):
             students = Student.objects.all()
             serializedData = StudentSerializer(students, many=True)
             res = Cnf.prepareSuccessResponse(serializedData.data)
+            logger.debug(f' {request.user.username} -> Fetched: All')
             return res
         except Exception as e:
-            print(f"[ERROR]: {e}")
+            logger.debug(f' {request.user.username} -> ERR: {e}')
             return Cnf.prepareErrorResponse('dberr_get')
         
     
@@ -73,11 +80,12 @@ class StudentListView(APIView):
             if serializedData.is_valid():
                 serializedData.save()
                 res = Cnf.prepareSuccessResponse(serializedData.data, 201)
+                logger.debug(f' {request.user.username} -> Created: {res.data.id}')
             else:
                 res = Cnf.prepareErrorResponse('dberr_post', 500, "Invalid input for the fields!")
             return res
         except Exception as e:
-            print(f"[ERROR]: {e}")
+            logger.debug(f' {request.user.username} -> ERR: {e}')
             return Cnf.prepareErrorResponse('dberr_post')
 
 
@@ -91,7 +99,6 @@ class StudentDetailView(APIView):
         try:
             return Student.objects.get(user=id)
         except Exception as e:
-            print(f"[ERROR]: {e}")
             raise Exception(str(e))
 
     
@@ -102,11 +109,13 @@ class StudentDetailView(APIView):
             if (student):
                 serializedData = StudentSerializer(student)
                 res = Cnf.prepareSuccessResponse(serializedData.data)
+                logger.debug(f' {request.user.username} -> Fetched: {student.id}')
             else:
                 res = Cnf.prepareErrorResponse('dberr_get', 400)
+                logger.debug(f' {request.user.username} -> Failed Fetched: {id}')
             return res
         except Exception as e:
-            print(f"[ERROR]: {e}")
+            logger.debug(f' {request.user.username} -> ERR: {e}')
             return Cnf.prepareErrorResponse('dberr_get', 400, str(e))
 
 
@@ -118,11 +127,13 @@ class StudentDetailView(APIView):
             if serializedData.is_valid():
                 serializedData.save()
                 res = Cnf.prepareSuccessResponse(serializedData.data, 200)
+                logger.debug(f' {request.user.username} -> Updated: {student.id}')
             else:
                 res = Cnf.prepareErrorResponse('dberr_put', 500)
+                logger.debug(f' {request.user.username} -> Failed Update: {id}')
             return res
         except Exception as e:
-            print(f"[ERROR]: {e}")
+            logger.debug(f' {request.user.username} -> ERR: {e}')
             return Cnf.prepareErrorResponse('dberr_put', 400, str(e))
 
 
@@ -134,9 +145,11 @@ class StudentDetailView(APIView):
                 serializedData = StudentSerializer(student)
                 student.delete()
                 res = Cnf.prepareSuccessResponse(serializedData.data, 204)
+                logger.debug(f' {request.user.username} -> Removed: {id}')
             else:
                 res = Cnf.prepareErrorResponse('dberr_del', 500)
+                logger.debug(f' {request.user.username} -> Failed to removed: {id}')
             return res
         except Exception as e:
-            print(f"[ERROR]: {e}")
+            logger.debug(f' {request.user.username} -> ERR: {e}')
             return Cnf.prepareErrorResponse('dberr_del', 400, str(e))
