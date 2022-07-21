@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from celery import Celery
 
-app = Celery('core', broker='amqp://', backend='amqp://', include=['core.tasks'])
+app = Celery('core', broker='', backend='', include=['core.api.tasks'])
 
 # Optional configuration, see the application user guide.
 app.conf.update(

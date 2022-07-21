@@ -80,7 +80,8 @@ class StudentListView(APIView):
             if serializedData.is_valid():
                 serializedData.save()
                 res = Cnf.prepareSuccessResponse(serializedData.data, 201)
-                logger.debug(f' {request.user.username} -> Created: {res.data.id}')
+                print(res.data)
+                logger.debug(f'{request.user.username} -> Created: {res.data}')
             else:
                 res = Cnf.prepareErrorResponse('dberr_post', 500, "Invalid input for the fields!")
             return res
