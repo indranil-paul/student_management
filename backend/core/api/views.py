@@ -31,6 +31,11 @@ class UserView(APIView):
     def get(self, request):        
         try:
             user = User.objects.get(id=request.user.id)
+            stud = None
+            try:
+                stud = Student.objects.get(user=request.user.id)
+            except:
+                pass
             userInfo = {
                 'uname': user.username,
                 'email': user.email,
@@ -38,13 +43,14 @@ class UserView(APIView):
                 'lname': user.last_name,
                 'admin': user.is_superuser,
                 'id': user.id,
+                'hasprofile': True if stud else False
             }
             res = Cnf.prepareSuccessResponse(userInfo)
             logger.debug(f' {request.user.username} -> Fetch user details')
             return res
         except Exception as e:
             logger.debug(f' {request.user.username} -> ERR: {e}')
-            return Cnf.prepareErrorResponse('default')
+            return Cnf.prepareErrorResponse()
 
 
 class RegisterUserView(generics.CreateAPIView):

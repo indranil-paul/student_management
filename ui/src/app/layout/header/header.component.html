@@ -28,7 +28,7 @@
                 <i class="bi bi-gear"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="navbarScrollingDropdown">
-                <li><a class="dropdown-item" routerLink="/register" routerLinkActive="activebutton"><i class="bi bi-person-plus"></i> Registration</a></li>
+                <li><a class="dropdown-item" [ngClass]="hasProfile" routerLink="/register" routerLinkActive="activebutton"><i class="bi bi-person-plus"></i> Registration</a></li>
                 <li><a class="dropdown-item" routerLink="/studinfo" routerLinkActive="activebutton"><i class="bi bi-person-check"></i> Check Profile</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="mailto:inpaul@cisco.com"><i class="bi bi-envelope"></i> Contact Us</a></li>

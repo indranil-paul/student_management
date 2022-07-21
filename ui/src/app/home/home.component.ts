@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { StudentService } from '../core/student.service';
 
 @Component({
   selector: 'app-home',
@@ -8,9 +10,23 @@ import { Router } from '@angular/router';
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private router: Router) { }
+  hasProfile: boolean = false;
+  subjectSubs!: Subscription;
+
+  constructor(private router: Router, private studentService: StudentService) { }
 
   ngOnInit(): void {
+    this.subjectSubs = this.studentService.onMessage().subscribe(msg => {
+      if (msg) {
+        let user = msg.text;
+        let hasprofile = user?.split("|")[6];
+        if (hasprofile == 'true'){
+          this.hasProfile = true;
+        } else {
+          this.hasProfile = false;
+        }
+      }
+    });
   }
 
   /**
@@ -18,6 +34,13 @@ export class HomeComponent implements OnInit {
    */
   public gotoRegPage(): void {
     this.router.navigateByUrl('register');
+  }
+
+  /**
+   * Navigate to login page
+   */
+  public gotoProfilePage(): void {
+    this.router.navigateByUrl('signup');
   }
 
 }

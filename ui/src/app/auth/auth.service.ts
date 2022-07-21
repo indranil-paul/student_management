@@ -125,7 +125,7 @@ export class AuthService implements OnDestroy{
       next: (res: any) => {
         if (res.status == 'success') {
           this.loggedInUser = res.data;
-          let userDetails = res.data.id + "|" + res.data.uname + "|" + res.data.fname + "|" + res.data.lname + "|" + res.data.email + "|" + res.data.admin;
+          let userDetails = res.data.id + "|" + res.data.uname + "|" + res.data.fname + "|" + res.data.lname + "|" + res.data.email + "|" + res.data.admin + "|" + res.data.hasprofile;
           localStorage.setItem("user_details", userDetails);
         }
       },

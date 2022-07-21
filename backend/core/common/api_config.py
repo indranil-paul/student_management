@@ -52,7 +52,7 @@ def prepareSuccessResponse(_data = '', _resCode = 200):
 '''
 Prepares HTTPS error responses based on the response structure & error messages
 '''
-def prepareErrorResponse(_errorCode = '_default', _resCode = 500, _errorMessage = ''):
+def prepareErrorResponse(_errorCode = 'default', _resCode = 500, _errorMessage = ''):
     res = copy.copy(RESPONSE_STRUCT)
     res['status'] = 'error'
     res['data'] = ERROR_MSG[_errorCode]

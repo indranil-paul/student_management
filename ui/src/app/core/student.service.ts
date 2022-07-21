@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http'; 
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { APIEndPoints as ep} from 'src/app/core/app.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StudentService {
+  private subject = new Subject<any>();
 
   constructor(public http: HttpClient) { }
 
@@ -32,5 +33,10 @@ export class StudentService {
     let url: string = this.geturl(_key, _id);
     return this.http.put(url, _payload);
   }
-  
+
+  sendMessage(message: any) { this.subject.next({ text: message });}
+
+  clearMessages() { this.subject.next({});}
+
+  onMessage(): Observable<any> { return this.subject.asObservable();}
 }

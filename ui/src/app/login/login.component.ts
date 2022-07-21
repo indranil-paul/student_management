@@ -15,7 +15,7 @@ export class LoginComponent implements OnInit {
   form: FormGroup = new FormGroup({});
   formSubmitAttempt: boolean = false;
   failedtoLogin: boolean = false;
-
+  
   constructor(private authService: AuthService, private fb: FormBuilder, private studentService: StudentService, private router: Router) { }
 
   ngOnInit(): void {
@@ -35,6 +35,12 @@ export class LoginComponent implements OnInit {
   onSubmit() {
     if (this.form.valid) {
       this.authService.login(this.form.value);
+
+      setTimeout(() => {
+        let user = localStorage.getItem('user_details');
+        this.studentService.sendMessage(user);
+      }, 5000);
+      
     } else {
       this.formSubmitAttempt = true;
     }
